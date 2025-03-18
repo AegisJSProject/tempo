@@ -17,3 +17,4 @@ importmap.yaml
 *.bak
 *.env
 !*.map
+locks.js
