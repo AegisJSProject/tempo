@@ -1,8 +1,8 @@
-// import '@shgysk8zer0/polyfills';
-import './locks.js';
+import '@shgysk8zer0/polyfills';
+// import './locks.js';
 import { debounce, throttle } from './tempo.js';
 import { test, describe } from 'node:test';
-import { ok, strictEqual } from 'node:assert';
+import { ok, rejects, strictEqual } from 'node:assert';
 
 const signal = AbortSignal.timeout(1000);
 
@@ -41,7 +41,8 @@ describe('Test tempo functions.', () => {
 	test('Test aborting `throttled()` callbacks.', { signal }, async () => {
 		let called = false;
 		const callback = throttle(() => called = true, { signal: AbortSignal.any([signal, AbortSignal.timeout(1)]), delay: 50 });
-		await callback();
+		await rejects(callback, 'Should throw/reject when signal aborts.');
+		// await callback().finally();
 
 		ok(! called, 'Aborted throttled functions should be cancelled.');
 	});

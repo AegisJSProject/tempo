@@ -6,7 +6,7 @@
  * @param {number} [options.delay] The debounce delay in milliseconds.
  * @param {"user-blocking"|"user-visible"|"background"} [options.priority] The task priority ('user-blocking', 'user-visible', 'background').
  * @param {AbortSignal} [options.signal] An AbortSignal to cancel the debounced call.
- * @param {any} [options.thisArg=null] The 'this' context for the callback.
+ * @param {any} [options.thisArg] The 'this' context for the callback.
  * @returns {Function} A debounced version of the input function.
  * @throws {TypeError} If the callback is not a function.
  * @throws {Error} If the provided AbortSignal is already aborted.
@@ -15,7 +15,7 @@ export function debounce(callback, {
 	delay,
 	priority,
 	signal,
-	thisArg = null,
+	thisArg,
 } = {}) {
 	if (typeof callback !== 'function') {
 		throw new TypeError('Callback must be a function.');
@@ -24,7 +24,7 @@ export function debounce(callback, {
 	} else if (signal instanceof AbortSignal) {
 		let controller;
 
-		return async (...args) => {
+		return async function(...args) {
 			if (! signal.aborted) {
 				if (controller instanceof AbortController && ! controller.signal.aborted) {
 					controller.abort();
@@ -32,7 +32,7 @@ export function debounce(callback, {
 
 				controller = new AbortController();
 
-				return await scheduler.postTask(() => callback.apply(thisArg, args), {
+				return await scheduler.postTask(() => callback.apply(thisArg ?? this, args), {
 					delay,
 					priority,
 					signal: AbortSignal.any([signal, controller.signal]),
@@ -69,7 +69,7 @@ export function debounce(callback, {
  * @param {boolean} [options.ifAvailable=true] If true, the lock request fails immediately if the lock is not available. If false, the request waits.
  * @param {boolean} [options.steal=false] If true, the lock request can "steal" the lock from waiting requests. If false, the request waits in the queue.
  * @param {"shared"|"exclusive"} [options.mode="exclusive"] The lock mode ('exclusive'). Only 'exclusive' is supported for throttling.
- * @param {any} [options.thisArg=null] The 'this' context for the callback.
+ * @param {any} [options.thisArg] The 'this' context for the callback.
  * @param {AbortSignal} [options.signal] An AbortSignal to cancel the throttled call.
  * @returns {Function} A throttled version of the input function.
  * @throws {TypeError} If the callback is not a function or if both `steal` and `ifAvailable` are both true.
@@ -83,7 +83,7 @@ export function throttle(callback, {
 	steal = false,
 	mode = 'exclusive',
 	signal,
-	thisArg = null,
+	thisArg,
 } = {}) {
 	if (typeof callback !== 'function') {
 		throw new TypeError('Callback must be a function.');
@@ -92,15 +92,16 @@ export function throttle(callback, {
 	} else if (signal instanceof AbortSignal && signal.aborted) {
 		throw signal.reason;
 	} else {
-		return async (...args) => {
+		return async function(...args) {
 			const hasSignal = signal instanceof AbortSignal;
+
 			await navigator.locks.request(
 				lockName,
 				{ mode, ifAvailable, steal },
 				async (lock) => {
-					// Cannot use both `signal` and `ifAvailable` together
-					if (lock instanceof Lock && ! (hasSignal && signal.aborted)) {
-						const result = await scheduler.postTask(() => callback.apply(thisArg, args), { priority, signal });
+					// Check `lock.mode` to avoid issues of `Lock` not being defined
+					if (lock?.mode === mode && ! (hasSignal && signal.aborted)) {
+						const result = await scheduler.postTask(() => callback.apply(thisArg ?? this, args), { priority, signal });
 						await new Promise(resolve => setTimeout(resolve, delay));
 						return result;
 					} else {
