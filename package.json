@@ -1,6 +1,6 @@
 {
   "name": "@aegisjsproject/tempo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tempo provides advanced debouncing and throttling utilities for fine-grained execution control.",
   "keywords": [],
   "type": "module",
@@ -71,8 +71,8 @@
   "homepage": "https://github.com/AegisJSProject/tempo#readme",
   "devDependencies": {
     "@rollup/plugin-terser": "^1.0.0",
-    "@shgysk8zer0/eslint-config": "^1.0.3",
-    "@shgysk8zer0/polyfills": "^0.6.0",
-    "rollup": "^4.36.0"
+    "@shgysk8zer0/eslint-config": "^1.0.7",
+    "@shgysk8zer0/polyfills": "^0.6.2",
+    "rollup": "^4.59.0"
   }
 }

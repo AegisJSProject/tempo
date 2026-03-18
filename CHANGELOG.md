@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.1] - 2026-03-18
+
+### Changed
+- Update to node 25.3.0
+- Update publishing on npm
+
+### Removed
+- Removed node fallback for `navigator.lock` (supported in node 25)
+
 ## [v1.0.0] - 2025-03-18
 
 Initial Release
